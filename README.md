@@ -17,34 +17,42 @@ I plan on adding a *"Discover"* option, that will try to find any orphaned sub-d
 
 |  Argument  | Description |
 | ---------- | --- |
-| -t QueryType | Where QueryType is one or more of A, AAAA, MX, NS, PTR or SOA. |
-|-o Output | Where Output is one or more of CSV, JSON, NOC. |
+| -t QueryType | Where QueryType is one or more of A, AAAA, MX, NS, PTR or SOA |
+|-o Output | Where Output is one or more of CSV, JSON, NOC |
 |-F FileName |        Where Filename is the full path for the JSON output. (Only used with the -o JSON option) |
-|-H | Only display the head information in the console. |
-|-q | Include the query information when displaying the output in the console. |
-|-V | Display verbose information.  When running a TRACE this will display the 'A' record lookups for the Name Servers. |
-|-v |  Display the version information and then stop. |
-|-h |  Display this help screen. |
+|-H | Only display the head information in the console |
+|-q | Include the query information when displaying the output in the console |
+|-V | Display verbose information.  When running a TRACE this will display the 'A' record lookups for the Name Servers |
+|-v |  Display the version information and then stop |
+|-h |  Display this help screen |
 
-***NB:** The '-' options ARE case sensitive.*
+***NB:** The '-' options **ARE** case sensitive.*
 
 |  Argument  | Description |
 | ---------- | --- |
-|+RDFlag |Set Recursive Lookup flag (default). |
-|+NoRDFlag | Unset Recursive Lookup flag.|
-|+RECURSE | Same as +RDFlag. |
-|+NoRECURSE | Same as +NoRDFlag. |
-|+ADFlag | Set Authenticated Data flag (default). |
-|+NoADFlag | Unset Auhenticated Data flag. |
-|+CDFlag | Set Checking Disabled flag. |
-|+NoCDFlag | Unset Checking Disabled flag (default). |
-|+RAW | Display the raw packet bytes in the console output. |
+|+RDFlag |Set Recursive Lookup flag (default) |
+|+NoRDFlag | Unset Recursive Lookup flag|
+|+RECURSE | Same as +RDFlag |
+|+NoRECURSE | Same as +NoRDFlag |
+|+ADFlag | Set Authenticated Data flag (default) |
+|+NoADFlag | Unset Auhenticated Data flag |
+|+CDFlag | Set Checking Disabled flag |
+|+NoCDFlag | Unset Checking Disabled flag (default) |
+|+RAW | Display the raw packet bytes in the console output |
 |+TRACE | Trace delegation down from root |
-|+TEST |  Perform a lookup on the final result of a TRACE. |
-|+TimeOut | Set Timeout value in seconds (default is 5 seconds). |
+|+TEST |  Perform a lookup on the final result of a TRACE |
+|+TimeOut | Set Timeout value in seconds (default is 5 seconds) |
 |+Retry | Set the number of reties after a timeout (default is 4) |
 
-***NB:** The '+' options are NOT case sensitive.*
+***NB:** The '+' options are **NOT** case sensitive.*
+
+
+|  Argument  | Description |
+| ---------- | --- |
+| Show License | Display the GNU3 License |
+| Show Help | Display this help screen |
+
+***NB:** The 'Show' options are **NOT** case sensitive.*
 
 ### Output Format:
 There are three options for the output format:
