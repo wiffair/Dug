@@ -1,19 +1,5 @@
 # Dug
 DUG is a DNS lookup tool written in C#.  
-Copyright (C) 2024  Richard Cole
-
-*This program is free software: you can redistribute it and/or modify*  
-*it under the terms of the GNU General Public License as published by*  
-*the Free Software Foundation, either version 3 of the License, or*  
-*(at your option) any later version.*
-
-*This program is distributed in the hope that it will be useful,*  
-*but WITHOUT ANY WARRANTY; without even the implied warranty of*  
-*MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the*  
-*GNU General Public License for more details.*
-
-You should have received a copy of the GNU General Public License  
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Dug is loosely modeled on DIG, but currently supports only a subset of the options.
 
@@ -71,3 +57,6 @@ There are three options for the output format:
 * NOC:
 
     Stops the display of the standard output - can be used with either the CSV or JSON options.
+
+
+Unless otherwise specified, all source code hosted on this repository is licensed under the GPLv3 license. See the [LICENSE](https://github.com/wiffair/Dug?tab=GPL-3.0-1-ov-file#readme) file for more details.
