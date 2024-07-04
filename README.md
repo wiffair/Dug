@@ -46,13 +46,6 @@ I plan on adding a *"Discover"* option, that will try to find any orphaned sub-d
 
 ***NB:** The '+' options are NOT case sensitive.*
 
-* This is the first list item.
-* Here's the second list item.
-
-    I need to add another paragraph below the second list item.
-
-* And here's the third list item.
-
 ### Output Format:
 There are three options for the output format:
 * CSV:
