@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "dug": {
+      "commandName": "Project",
+      "commandLineArgs": "@1.1.1.1\r\nwww.google.co.uk"
+    }
+  }
+}

@@ -33,6 +33,9 @@ NB: The '-' options ARE case sensitive.
 
 NB: The '+' options are NOT case sensitive.
 
+Show License        Display the GNU3 License
+Show Help           Display this help screen
+
 OutputFormat:       There are three options for the output format:
                         CSV:    A subset of the gathered information displayed as csv with a header.
                        JSON:    JSON output of the full collected data. The data will either be displayed in the console window, or

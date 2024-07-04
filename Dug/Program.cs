@@ -1,7 +1,21 @@
-﻿using DNS_Checker.dataContainers;
-using DNS_Checker.helpers;
-using DNS_Checker.methods;
-using DNS_Checker.models;
+﻿// Dug is a DNS lookup tool
+// Copyright(C) 2024  Richard Cole
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//   This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+
+
+using dug.dataContainers;
+using dug.helpers;
+using dug.methods;
+using dug.models;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
@@ -74,8 +88,8 @@ if (Args.Length > 1)
                     Environment.Exit(0);
                     break;
                 case "h":
-                    Help help = new Help();
-                    help.PrintHelpText();
+                    DisplayTextFiles displayTextFile = new DisplayTextFiles();
+                    displayTextFile.PrintHelpText();
                     Environment.Exit(0);
                     break;
                 default:
@@ -143,14 +157,34 @@ if (Args.Length > 1)
                     break;
             }
         }
+        else if (argument[i].ToUpper() == "SHOW")
+        {
+            i++;
+            DisplayTextFiles displayTextFile = new DisplayTextFiles();
+            switch (argument[i].ToUpper())
+            {
+                case "LICENSE":
+                    displayTextFile.PrintLicenseText();
+                    Environment.Exit(0);
+                    break;
+                case "HELP":
+                    displayTextFile.PrintHelpText();
+                    Environment.Exit(0);
+                    break;
+                default:
+                    displayTextFile.PrintHelpText();
+                    Environment.Exit(0);
+                    break;
+            }
+        }
         else
         {
             // If no switch, it should be the query name...
             if (argument[i] == ".") qString = ""; else qString = argument[i];
-            
+
             lookupSet = true;
         }
-    }
+}
 }
 
 // Create Instance
@@ -290,7 +324,7 @@ int Process(bool lookupSet, bool dnsServerSet, List<string> dnsServers, string q
         NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
         foreach (NetworkInterface ni in networkInterfaces)
         {
-            if (ni.OperationalStatus == OperationalStatus.Up && ni.GetIPProperties().DnsAddresses.Count>0)
+            if (ni.OperationalStatus == OperationalStatus.Up && ni.GetIPProperties().DnsAddresses.Count > 0)
             {
                 foreach (IPAddress dnsAddress in ni.GetIPProperties().DnsAddresses)
                 {
@@ -303,17 +337,17 @@ int Process(bool lookupSet, bool dnsServerSet, List<string> dnsServers, string q
         }
         if (dnsServers.Count > 0) dnsServerSet = true;
     }
-    
+
 
     if (dnsServerSet)
     {
         // If PTR check if ip address has been passed, and if so convert it to a in-addr.arpa format
-        if(tFlags.PTR) queryName=PTRName(queryName);
+        if (tFlags.PTR) queryName = PTRName(queryName);
 
         // Process the request
         try
         {
-            LookUp.Go(dnsServers, queryName,  tFlags, responseFlags, options);
+            LookUp.Go(dnsServers, queryName, tFlags, responseFlags, options);
         }
         finally
         {

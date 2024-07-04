@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace DNS_Checker.resources {
+namespace dug.resources {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace DNS_Checker.resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("DNS_Checker.resources.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("dug.resources.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -76,6 +76,28 @@ namespace DNS_Checker.resources {
         internal static string HelpInfo {
             get {
                 return ResourceManager.GetString("HelpInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to                     GNU GENERAL PUBLIC LICENSE
+        ///                       Version 3, 29 June 2007
+        ///
+        /// Copyright (C) 2007 Free Software Foundation, Inc. &lt;https://fsf.org/&gt;
+        /// Everyone is permitted to copy and distribute verbatim copies
+        /// of this license document, but changing it is not allowed.
+        ///
+        ///                            Preamble
+        ///
+        ///  The GNU General Public License is a free, copyleft license for
+        ///software and other kinds of works.
+        ///
+        ///  The licenses for most software and other practical works are designed
+        ///t [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string LICENSE {
+            get {
+                return ResourceManager.GetString("LICENSE", resourceCulture);
             }
         }
     }

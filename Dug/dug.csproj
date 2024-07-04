@@ -7,11 +7,23 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyVersion>0.5.0.0</AssemblyVersion>
+    <Title>Dug</Title>
+    <Authors>Richard</Authors>
+    <Company>Wiffair</Company>
+    <Description>DUG is a DNS lookup tool</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="models\RawData.cs" />
     <Compile Remove="models\RawRow.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
