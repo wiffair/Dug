@@ -1,9 +1,9 @@
 # Dug
 DUG is a DNS lookup tool written in C#.
 
-It is loosly modeled on DIG, but currently supports only a subset of the options.
+It is loosely modeled on DIG, but currently supports only a subset of the options.
 
-I plan on adding a *"Discover"* option, that will try to find any orphened sub-domains.
+I plan on adding a *"Discover"* option, that will try to find any orphaned sub-domains.
 
 ## Usage
 **Usage:** dug Name  
