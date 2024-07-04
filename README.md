@@ -1,7 +1,7 @@
 # Dug
-DUG is a DNS lookup tool written in C#.
+DUG is a DNS lookup tool written in C#.  
 
-It is loosely modeled on DIG, but currently supports only a subset of the options.
+Dug is loosely modeled on DIG, but currently supports only a subset of the options.
 
 I plan on adding a *"Discover"* option, that will try to find any orphaned sub-domains.
 
@@ -46,13 +46,6 @@ I plan on adding a *"Discover"* option, that will try to find any orphaned sub-d
 
 ***NB:** The '+' options are NOT case sensitive.*
 
-* This is the first list item.
-* Here's the second list item.
-
-    I need to add another paragraph below the second list item.
-
-* And here's the third list item.
-
 ### Output Format:
 There are three options for the output format:
 * CSV:
@@ -64,3 +57,6 @@ There are three options for the output format:
 * NOC:
 
     Stops the display of the standard output - can be used with either the CSV or JSON options.
+
+
+Unless otherwise specified, all source code hosted on this repository is licensed under the GPLv3 license. See the [LICENSE](https://github.com/wiffair/Dug?tab=GPL-3.0-1-ov-file#readme) file for more details.
