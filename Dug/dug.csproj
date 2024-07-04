@@ -6,7 +6,7 @@
     <RootNamespace>dug</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyVersion>0.5.0.0</AssemblyVersion>
+    <AssemblyVersion>0.5.0.1</AssemblyVersion>
     <Title>Dug</Title>
     <Authors>Richard</Authors>
     <Company>Wiffair</Company>
