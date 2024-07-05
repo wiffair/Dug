@@ -1,21 +1,10 @@
-﻿// Dug is a DNS lookup tool
-// Copyright(C) 2024  Richard Cole
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//   This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-
-using dug.dataContainers;
+﻿using dug.dataContainers;
 using dug.enums;
 using dug.helpers;
 using dug.models;
 using System.Reflection;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Xml.Linq;
 
 namespace dug.methods
 {
@@ -24,20 +13,26 @@ namespace dug.methods
     {
         private readonly DataContainer _dataContainer;
         private readonly UdpListener _udpListener;
-
-        public Lookup(DataContainer dataContainer, UdpListener udpListener)
+        private readonly Options _options;
+        // Set up Logging
+        Logger _logger = new Logger();
+        LoggerOptions loggerOptions = new LoggerOptions();
+        public Lookup(DataContainer dataContainer, UdpListener udpListener, Options options)
         {
             _dataContainer = dataContainer;
             _udpListener = udpListener;
+            _options = options;
+            // Set up Logging
+            _logger = new Logger("Dug", "Lookup", options.Verbose);
         }
-        public async void Go(List<string> dnsServers, string domainName, TypeFlags flags, ResponseFlagsModel responseFlags, Options options)
+        public async void Go(List<string> dnsServers, string domainName, TypeFlags flags, ResponseFlagsModel responseFlags)
         {
-            if (options.Trace)
+            if (_options.Trace)
             {
                 // First find the names of the Root Servers
 
                 // Use an empty string to find root
-                DnsTestRecord? rootResponse = await FindRecordNS(dnsServers, "", options);
+                DnsTestRecord? rootResponse = await FindRecordNS(dnsServers, "", true);
 
                 // Check if we got a valid response
 
@@ -46,7 +41,7 @@ namespace dug.methods
 
                     // Now we need to resolve the A records for the root servers
 
-                    List<string>? tempDnsServers = await ResolveAllIpAddresses(rootResponse, options, options.Verbose);
+                    List<string>? tempDnsServers = await ResolveAllIpAddresses(rootResponse,  _options.Verbose);
 
                     // Check if we got at least one valid response
 
@@ -61,7 +56,7 @@ namespace dug.methods
 
                         while (!foundAuthorityServer && !forceExit)
                         {
-                            response = await FindRecordA(tempDnsServers, domainName, options);
+                            response = await FindRecordA(tempDnsServers, domainName);
                             if (response == null) forceExit = true;
                             else
                             {
@@ -69,33 +64,35 @@ namespace dug.methods
                                 else
                                 {
                                     tempDnsServers.Clear();
-                                    tempDnsServers = await ResolveAllIpAddresses(response, options, options.Verbose);
+                                    tempDnsServers = await ResolveAllIpAddresses(response, _options.Verbose);
                                     if (tempDnsServers == null) forceExit = true;
                                 }
                             }
                             loopCount++;
-                            if (loopCount > options.MaxRecords) forceExit = true;
+                            if (loopCount > _options.MaxRecords) forceExit = true;
                         }
 
-                        if (options.Test && foundAuthorityServer && response != null)
+                        if (_options.Test && foundAuthorityServer && response != null)
                         {
                             //do test
                             List<string> testDnsServers = new List<string>();
                             if (response.ResponseAnswers.Count > 0) testDnsServers.AddRange(await ExtractNSList(response.ResponseAnswers));
                             if (response.ResponseAuthorityRecords.Count > 0) testDnsServers.AddRange(await ExtractNSList(response.ResponseAuthorityRecords));
-                            _ = await FindRecordA(testDnsServers, domainName, options, true, true);
+                            _ = await FindRecordA(testDnsServers, domainName, true, true);
                         }
                     }
                     else
                     {
                         // Unable to resolve root A records
-                        await Console.Out.WriteLineAsync("Unable to resolve any A record for the root servers");
+                        _logger.Log(new LogModel("Go.Trace", dug.enums.SeverityLevel.Notice, "Unable to resolve any A record for the root server"),LoggerOptions.Default,true);
+                        //await Console.Out.WriteLineAsync("Unable to resolve any A record for the root servers");
                     }
                 }
                 else
                 {
+                    _logger.Log(new LogModel("Go.Trace", dug.enums.SeverityLevel.Notice, "Unable to resolve root servers using any of the provided name servers"), LoggerOptions.Default, true);
                     // Unable to resolve root
-                    await Console.Out.WriteLineAsync("Unable to resolve root servers using any of the provided name servers");
+                    //await Console.Out.WriteLineAsync("Unable to resolve root servers using any of the provided name servers");
                 }
             }
             else
@@ -112,47 +109,51 @@ namespace dug.methods
                             {
                                 typeFound = true;
                                 var responseType = (DnsRecordType)Enum.Parse(typeof(DnsRecordType), property.Name);
-                                DnsTestRecord? response = await DoAsync(dnsServer, domainName, responseType, responseFlags, options);
-                                if (response == null) { await Console.Out.WriteLineAsync($"Server {dnsServer} did not respond to request."); }
+                                DnsTestRecord? response = await DoAsync(dnsServer, domainName, responseType, responseFlags);
+                                if (response == null) {
+                                    _logger.Log(new LogModel("Go", dug.enums.SeverityLevel.Notice, $"Server {dnsServer} did not respond to request."), LoggerOptions.Default, true);
+                                    //await Console.Out.WriteLineAsync($"Server {dnsServer} did not respond to request."); 
+                                }
                             }
                         }
                         if (!typeFound)
                         {
-                            DnsTestRecord? response = await DoAsync(dnsServer, domainName, DnsRecordType.A, responseFlags, options);
-                            if (response == null) { await Console.Out.WriteLineAsync($"Server {dnsServer} did not respond to request."); }
+                            DnsTestRecord? response = await DoAsync(dnsServer, domainName, DnsRecordType.A, responseFlags);
+                            if (response == null) { _logger.Log(new LogModel("Go", dug.enums.SeverityLevel.Notice, $"Server {dnsServer} did not respond to request."), LoggerOptions.Default, true); }
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error resolving domain name against {dnsServer}: {ex.Message}");
+                        _logger.Log(new LogModel("Go", dug.enums.SeverityLevel.Warning, $"Error resolving domain name against {dnsServer}: {ex.Message}"), LoggerOptions.Default, true);
+                        //Console.WriteLine($"Error resolving domain name against {dnsServer}: {ex.Message}");
                     }
                 }
             }
             var output = new Output(_dataContainer);
-            output.OutResults(options);
+            output.OutResults(_options);
         }
 
 
 
 
-        private async Task<DnsTestRecord?> DoAsync(string serverIP, string domainName, DnsRecordType recordType, ResponseFlagsModel responseFlags, Options options, bool visable = true)
+        private async Task<DnsTestRecord?> DoAsync(string serverIP, string domainName, DnsRecordType recordType, ResponseFlagsModel responseFlags, bool visable = true)
         {
             ParseDnsPacket read = new(_dataContainer);
             bool responseArrived = false;
             int index = -1;
             var spinWait = new SpinWait();
 
-            for (int retry = 0; retry < options.MaxRetryCount; retry++)
+            for (int retry = 0; retry < _options.MaxRetryCount; retry++)
             {
                 try
                 {
                     ushort idNumber = _dataContainer.GetIdCount();
                     byte[] queryBytes = CreateQuery.CreateDnsQuery(domainName, recordType, responseFlags, idNumber);
-                    index = await read.ParseDnsQuery(queryBytes, DateTime.UtcNow,serverIP, options, visable);
+                    index = await read.ParseDnsQuery(queryBytes, DateTime.UtcNow,serverIP, _options, visable);
                     //Console.WriteLine($"Index: {index} : ID: {idNumber}");
-                    await _udpListener.SendDataAsync(queryBytes, serverIP, options.UdpPort);
+                    await _udpListener.SendDataAsync(queryBytes, serverIP, _options.UdpPort);
                     DateTime startTime = DateTime.UtcNow;
-                    while (!responseArrived && (DateTime.UtcNow - startTime).TotalSeconds < options.Timeout)
+                    while (!responseArrived && (DateTime.UtcNow - startTime).TotalSeconds < _options.Timeout)
                     {
                         responseArrived = _dataContainer.ResponseReceived(idNumber);
                         //Task.Yield();
@@ -160,12 +161,14 @@ namespace dug.methods
                     }
                     if (responseArrived) break;
                     _dataContainer.Timeout(index);
-                    await Console.Out.WriteLineAsync($"Timeout. Retry {retry + 1} of {options.MaxRetryCount}");
-                    spinWait.SpinOnce(options.SendDelay);
+                    _logger.Log(new LogModel("DoAsync", dug.enums.SeverityLevel.Notice, $"Timeout. Retry {retry + 1} of {_options.MaxRetryCount}"), LoggerOptions.Default, true);
+                    //await Console.Out.WriteLineAsync($"Timeout. Retry {retry + 1} of {_options.MaxRetryCount}");
+                    spinWait.SpinOnce(_options.SendDelay);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error: ({ex})");
+                    _logger.Log(new LogModel("DoAsync", dug.enums.SeverityLevel.Alert, $"Error: ({ex})"), LoggerOptions.Default, true);
+                    //Console.WriteLine($"Error: ({ex})");
                     return null;
                 }
             }
@@ -179,7 +182,7 @@ namespace dug.methods
             }
         }
 
-        private async Task<DnsTestRecord?> FindRecordNS(List<string> dnsServers, string domainName, Options options, bool visable = true)
+        private async Task<DnsTestRecord?> FindRecordNS(List<string> dnsServers, string domainName,  bool visable = true)
         {
             int i = 0;
             string dnsServer = string.Empty;
@@ -194,10 +197,11 @@ namespace dug.methods
             while (i < dnsServers.Count && !foundNS)
             {
                 dnsServer = dnsServers[i];
-                responseRecord = await DoAsync(dnsServer, domainName, recordType, rfm, options, visable);
+                responseRecord = await DoAsync(dnsServer, domainName, recordType, rfm, visable);
                 if (responseRecord == null)
                 {
-                    Console.WriteLine($"Unable to resolve root servers using server {dnsServer}");
+                    _logger.Log(new LogModel("FindRecordNS", dug.enums.SeverityLevel.Notice, $"Unable to resolve root servers using server {dnsServer}"), LoggerOptions.Default, true);
+                    //Console.WriteLine($"Unable to resolve root servers using server {dnsServer}");
                     i++;
                 }
                 else
@@ -218,7 +222,7 @@ namespace dug.methods
         /// <param name="options"></param>
         /// <param name="visable"></param>
         /// <returns></returns>
-        private async Task<DnsTestRecord?> FindRecordA(List<string> dnsServers, string domainName, Options options, bool visable = true, bool forceAll = false)
+        private async Task<DnsTestRecord?> FindRecordA(List<string> dnsServers, string domainName, bool visable = true, bool forceAll = false)
         {
             int i = 0;
             string dnsServer = string.Empty;
@@ -230,13 +234,14 @@ namespace dug.methods
             rfm.RD = false;
             rfm.AD = true;
             int index = -1;
-            while (i < dnsServers.Count && !foundA && index < options.MaxRecords)
+            while (i < dnsServers.Count && !foundA && index < _options.MaxRecords)
             {
                 dnsServer = dnsServers[i];
-                responseRecord = await DoAsync(dnsServer, domainName, recordType, rfm, options, visable);
+                responseRecord = await DoAsync(dnsServer, domainName, recordType, rfm, visable);
                 if (responseRecord == null)
                 {
-                    Console.WriteLine($"Unable to resolve {domainName} using server {dnsServer}");
+                    _logger.Log(new LogModel("FindRecordA", dug.enums.SeverityLevel.Notice, $"Unable to resolve {domainName} using server {dnsServer}"), LoggerOptions.Default, true);
+                    //Console.WriteLine($"Unable to resolve {domainName} using server {dnsServer}");
                     i++;
                 }
                 else
@@ -257,7 +262,7 @@ namespace dug.methods
         /// </summary>
         /// <param name="resourceRecords"></param>
         /// <returns>A List of strings containing resolved IP addresses</returns>
-        private async Task<List<string>?> ResolveAllIpAddresses(DnsTestRecord record, Options options, bool visable = true)
+        private async Task<List<string>?> ResolveAllIpAddresses(DnsTestRecord record,  bool visable = true)
         {
 
             bool foundA = false;
@@ -295,7 +300,7 @@ namespace dug.methods
                         string? rootNameServer = resourceRecord?.TypeNS?.NameServer;
                         if (rootNameServer != null)
                         {
-                            DnsTestRecord? ResolveA = await DoAsync(record.QueryServer, rootNameServer, recordType, rfm, options, visable);
+                            DnsTestRecord? ResolveA = await DoAsync(record.QueryServer, rootNameServer, recordType, rfm,   visable);
                             if (ResolveA != null)
                             {
                                 if (ResolveA.ResponseAuthorityRecords.Count > 0)

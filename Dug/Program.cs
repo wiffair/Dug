@@ -13,6 +13,7 @@
 
 
 using dug.dataContainers;
+using dug.enums;
 using dug.helpers;
 using dug.methods;
 using dug.models;
@@ -20,8 +21,6 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reflection;
-
-
 
 // Configure the DNS servers
 List<string> dnsServers = new();
@@ -184,8 +183,13 @@ if (Args.Length > 1)
 
             lookupSet = true;
         }
+    }
 }
-}
+
+
+// Set up Logging
+Logger _logger = new Logger("Dug","Program", options.Verbose);
+LoggerOptions loggerOptions = new LoggerOptions();
 
 // Create Instance
 var dataContainer = new DataContainer();
@@ -194,13 +198,15 @@ var dataContainer = new DataContainer();
 int? udpPort = NetworkHelpers.GetFreeUdpPort();
 if (!udpPort.HasValue)
 {
-    Console.WriteLine($"Error. Unable to open UDP lisener");
+    _logger.Log(new LogModel("Obtain UDP Port", dug.enums.SeverityLevel.Alert, "Unable to open UDP lisener"), LoggerOptions.ForceConsole | LoggerOptions.ForceLog);
     Environment.Exit(-999);
 }
 else
-{ Console.WriteLine($"Listening on UDP Port: {udpPort}"); }
+{
+    _logger.Log(new LogModel("Obtain UDP Port", SeverityLevel.Info, $"Listening on UDP Port: {udpPort}"),LoggerOptions.Default,true);
+}
 UdpListener udpListener = new UdpListener((int)udpPort, dataContainer);
-var LookUp = new Lookup(dataContainer, udpListener);
+var LookUp = new Lookup(dataContainer, udpListener, options);
 Task listeningTask = udpListener.StartListeningAsync();
 
 // Process if we have passed in the values at run time
@@ -208,7 +214,7 @@ if (argsSet)
 {
     if (Process(lookupSet, dnsServerSet, dnsServers, qString, typeFlags, responseFlags, options) < 0)
     {
-        Console.WriteLine("Error processing");
+        _logger.Log(new LogModel("ArgInput", dug.enums.SeverityLevel.Alert, "Error processing request"), LoggerOptions.ForceConsole | LoggerOptions.ForceLog);
         Environment.Exit(-1);
     }
     else Environment.Exit(0);
@@ -303,7 +309,7 @@ do
 
     if (Process(lookupSet, dnsServerSet, dnsServers, qString, typeFlags, responseFlags, options) < 0)
     {
-        Console.WriteLine("Error processing");
+        _logger.Log(new LogModel("ConsoleInput", dug.enums.SeverityLevel.Alert, "Error processing request"), LoggerOptions.ForceConsole | LoggerOptions.ForceLog);
         Environment.Exit(-1);
     }
 
@@ -315,7 +321,7 @@ int Process(bool lookupSet, bool dnsServerSet, List<string> dnsServers, string q
 {
     if (!lookupSet)
     {
-        Console.WriteLine($"Error: {lookupSetError}");
+        _logger.Log(new LogModel("Process", dug.enums.SeverityLevel.Alert, $"Error: {lookupSetError}"), LoggerOptions.ForceConsole | LoggerOptions.ForceLog);
         Environment.Exit(10);
     }
     // If a name has been passed- try to resolve it
@@ -347,7 +353,7 @@ int Process(bool lookupSet, bool dnsServerSet, List<string> dnsServers, string q
         // Process the request
         try
         {
-            LookUp.Go(dnsServers, queryName, tFlags, responseFlags, options);
+            LookUp.Go(dnsServers, queryName, tFlags, responseFlags);
         }
         finally
         {
@@ -360,7 +366,7 @@ int Process(bool lookupSet, bool dnsServerSet, List<string> dnsServers, string q
     }
     else
     {
-        Console.WriteLine($"Error:{dnsServerSetError}");
+        _logger.Log(new LogModel("Process", dug.enums.SeverityLevel.Alert, $"Error:{dnsServerSetError}"), LoggerOptions.ForceConsole | LoggerOptions.ForceLog);
         Environment.Exit(11);
     }
     return -1;
